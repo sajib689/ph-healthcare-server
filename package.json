@@ -5,18 +5,24 @@
   "author": "shafayat",
   "license": "MIT",
   "scripts": {
+      "type": "module",
     "dev": "ts-node-dev --respawn --transpile-only ./src/server.ts"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.2",
+    "dotenv": "^17.4.2",
     "express": "^5.1.0",
-    "http-status": "^2.1.0"
+    "http-status": "^2.1.0",
+    "pg": "^8.21.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/node": "^24.5.0",
+    "@types/pg": "^8.20.0",
+    "prisma": "^7.8.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.2"
   }
