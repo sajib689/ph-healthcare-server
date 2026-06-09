@@ -74,3 +74,16 @@ model Doctor {
 
   @@map("doctors")
 }
+
+model Patient {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  profilePhoto String?
+  address      String
+  isDeleted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("patients")
+}
