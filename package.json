@@ -5,12 +5,13 @@
   "author": "shafayat",
   "license": "MIT",
   "scripts": {
-      "type": "module",
+    "type": "module",
     "dev": "ts-node-dev --respawn --transpile-only ./src/server.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^5.1.0",
@@ -18,6 +19,7 @@
     "pg": "^8.21.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/node": "^24.5.0",
