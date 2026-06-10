@@ -12,8 +12,16 @@ const createPatient = async (payload: createPatientInput) => {
         password: hashPassword,
       },
     });
-    
+
+    await tnx.patient.create({
+      data: {
+        name: payload.name,
+        email: payload.email,
+      },
+    });
   });
+
+  return result;
 };
 
 export const userService = {
