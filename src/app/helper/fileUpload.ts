@@ -22,6 +22,13 @@ const uploadFileToCloudinary = async (file: Express.Multer.File) => {
         api_key: process.env.CLOUDINARY_API_KEY,
         api_secret: process.env.CLOUDINARY_API_SECRET,
     })
+    // upload an image
+    const uploadResult = await cloudinary.uploader.upload("",{
+      public_id: ""
+    })
+    .catch((error) => {
+      console.log(error)
+    })
 };
 
 export const fileUploader = {
