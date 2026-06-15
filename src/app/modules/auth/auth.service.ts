@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { email } from "zod";
 import config from "../../../config";
+import { jwtHelper } from "../../helper/jwtHelper";
 
 const login = async (payload: { email: string; password: string }) => {
   const user = await prisma.user.findUnique({
@@ -13,8 +14,12 @@ const login = async (payload: { email: string; password: string }) => {
     },
   });
 
+  if (!user) {
+    throw new Error("User not found!");
+  }
+  
   const isCorrectPassword = await bcrypt.compare(
-    payload.password,
+    payload?.password,
     user?.password as string,
   );
 
@@ -22,34 +27,29 @@ const login = async (payload: { email: string; password: string }) => {
     throw new Error("Password or email invalid");
   }
 
-  const accessToken = await jwt.sign(
+  const accessToken = jwtHelper.generateToken(
     {
       email: user?.email,
       role: user?.role,
     },
-    config?.JWT_TOKEN,
-    {
-      algorithm: "HS256",
-      expiresIn: "1h",
-    },
+    config.JWT_TOKEN,
+    "1h",
   );
 
-  const refreshToken = await jwt.sign(
+  const refreshToken = jwtHelper.generateToken(
     {
       email: user?.email,
       role: user?.role,
     },
     config.JWT_REFRESH_TOKEN,
-    {
-      algorithm: "HS256",
-      expiresIn: "7d",
-    },
+    "7d",
   );
+  const { password, ...userWithoutPassword } = user;
 
   return {
     accessToken,
     refreshToken,
-    user,
+    userWithoutPassword,
   };
 };
 
