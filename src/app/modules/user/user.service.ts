@@ -4,10 +4,9 @@ import bcrypt from "bcrypt";
 import { fileUploader } from "../../helper/fileUpload";
 
 const createPatient = async (req: Request) => {
-  
   if (req.file) {
     const uploadResult = await fileUploader.uploadFileToCloudinary(req.file);
-    req.body.patient.profilePhoto = uploadResult?.secure_url
+    req.body.patient.profilePhoto = uploadResult?.secure_url;
   }
 
   const hashPassword = await bcrypt.hash(req.body.password, 10);
@@ -21,13 +20,39 @@ const createPatient = async (req: Request) => {
     });
 
     return await tnx.patient.create({
-      data: req.body.patient
+      data: req.body.patient,
     });
   });
 
   return result;
 };
 
+const createDoctor = async (req: Request) => {
+  if (req.file) {
+    const uploadResult = await fileUploader.uploadFileToCloudinary(req.file);
+    req.body.doctor.file = uploadResult?.secure_url;
+  }
+
+  const hashPassword = await bcrypt.hash(req.body.password, 10);
+
+  const result = await prisma.$transaction(async (tnx) => {
+    await tnx.user.create({
+      data: {
+        email: req.body.doctor.email,
+        password: hashPassword,
+      },
+    });
+    return await tnx.doctor.create({
+      data: req.body.doctor,
+    });
+  });
+  return result;
+};
+
+const createAdmin = async (req: Request) => {};
+
 export const userService = {
   createPatient,
+  createDoctor,
+  createAdmin,
 };

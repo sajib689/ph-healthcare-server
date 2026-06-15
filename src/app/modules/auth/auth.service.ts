@@ -1,12 +1,11 @@
-import { Role, Status } from "@prisma/client";
+import {  Status } from "@prisma/client";
 import { prisma } from "../../shared/prisma";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { email } from "zod";
 import config from "../../../config";
 import { jwtHelper } from "../../helper/jwtHelper";
 
 const login = async (payload: { email: string; password: string }) => {
+    
   const user = await prisma.user.findUnique({
     where: {
       email: payload.email,
@@ -17,7 +16,7 @@ const login = async (payload: { email: string; password: string }) => {
   if (!user) {
     throw new Error("User not found!");
   }
-  
+
   const isCorrectPassword = await bcrypt.compare(
     payload?.password,
     user?.password as string,
