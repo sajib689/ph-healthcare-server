@@ -15,4 +15,12 @@ router.post(
   },
 );
 
+router.post("/create-admin", fileUploader.upload.single("file"), (
+  req: Request, res: Response, next: NextFunction
+) => {
+  req.body = UserValidation.createAdminValidationSchema.parse(
+    JSON.parse(req.body.data)
+  )
+})
+
 export const userRoute = router;

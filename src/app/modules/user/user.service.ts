@@ -2,6 +2,7 @@ import { Request } from "express";
 import { prisma } from "../../shared/prisma";
 import bcrypt from "bcrypt";
 import { fileUploader } from "../../helper/fileUpload";
+import { email } from "zod";
 
 const createPatient = async (req: Request) => {
   if (req.file) {
@@ -30,7 +31,7 @@ const createPatient = async (req: Request) => {
 const createDoctor = async (req: Request) => {
   if (req.file) {
     const uploadResult = await fileUploader.uploadFileToCloudinary(req.file);
-    req.body.doctor.file = uploadResult?.secure_url;
+    req.body.doctor.profilePhoto = uploadResult?.secure_url;
   }
 
   const hashPassword = await bcrypt.hash(req.body.password, 10);
@@ -49,7 +50,31 @@ const createDoctor = async (req: Request) => {
   return result;
 };
 
-const createAdmin = async (req: Request) => {};
+const createAdmin = async (req: Request) => {
+  // file upload
+  if (req.file) {
+    const uploadResult = await fileUploader.uploadFileToCloudinary(req.file);
+    req.body.admin.profilePhoto = uploadResult?.secure_url;
+  }
+
+  const hashPassword = await bcrypt.hash(req.body.password, 10);
+
+  const result = await prisma.$transaction(async (tnx) => {
+    
+    await tnx.user.create({
+      data: {
+        email: req.body.admin.email,
+        password: hashPassword,
+      },
+    });
+
+    await tnx.admin.create({
+      data: req.body.admin,
+    });
+  });
+
+  return result;
+};
 
 export const userService = {
   createPatient,
