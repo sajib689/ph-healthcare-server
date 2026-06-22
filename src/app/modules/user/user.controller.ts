@@ -38,8 +38,26 @@ const createAdmin = catchAsync(async (req: Request, res: Response) => {
   
 })
 
+const getAllFromDb = catchAsync(async (req: Request, res: Response) => {
+  const page = Number(req.query.page)
+  const limit = Number(req.query.limit)
+
+  const result = await userService.getAllFromDb({
+    page,
+    limit
+  })
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 201,
+    data: result,
+    message: "Users retrieved successfully."
+  })
+})
+
 export const userController = {
   createPatient,
   createDoctor,
-  createAdmin
+  createAdmin,
+  getAllFromDb
 };

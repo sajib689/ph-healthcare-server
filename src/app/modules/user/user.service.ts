@@ -59,7 +59,6 @@ const createAdmin = async (req: Request) => {
   const hashPassword = await bcrypt.hash(req.body.password, 10);
 
   const result = await prisma.$transaction(async (tnx: any) => {
-    
     await tnx.user.create({
       data: {
         email: req.body.admin.email,
@@ -75,13 +74,21 @@ const createAdmin = async (req: Request) => {
   return result;
 };
 
-const getAllFromDb = () => {
-
-}
+const getAllFromDb = async ({
+  page,
+  limit,
+}: {
+  page: number;
+  limit: number;
+}) => {
+  const skip = (page - 1) * limit;
+  const result = await prisma.user.findMany({ skip, take: page });
+  return result;
+};
 
 export const userService = {
   createPatient,
   createDoctor,
   createAdmin,
-  getAllFromDb
+  getAllFromDb,
 };
