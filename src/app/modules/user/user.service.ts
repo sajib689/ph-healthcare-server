@@ -75,8 +75,13 @@ const createAdmin = async (req: Request) => {
   return result;
 };
 
+const getAllFromDb = () => {
+
+}
+
 export const userService = {
   createPatient,
   createDoctor,
   createAdmin,
+  getAllFromDb
 };
