@@ -1,8 +1,8 @@
-import {  Status } from "@prisma/client";
 import { prisma } from "../../shared/prisma";
 import bcrypt from "bcrypt";
 import config from "../../../config";
 import { jwtHelper } from "../../helper/jwtHelper";
+import { Status } from '@prisma/client';
 
 const login = async (payload: { email: string; password: string }) => {
     

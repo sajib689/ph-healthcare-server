@@ -2,7 +2,6 @@ import { Request } from "express";
 import { prisma } from "../../shared/prisma";
 import bcrypt from "bcrypt";
 import { fileUploader } from "../../helper/fileUpload";
-import { email } from "zod";
 
 const createPatient = async (req: Request) => {
   if (req.file) {
@@ -12,7 +11,7 @@ const createPatient = async (req: Request) => {
 
   const hashPassword = await bcrypt.hash(req.body.password, 10);
 
-  const result = await prisma.$transaction(async (tnx) => {
+  const result = await prisma.$transaction(async (tnx: any) => {
     await tnx.user.create({
       data: {
         email: req.body.patient.email,
@@ -36,7 +35,7 @@ const createDoctor = async (req: Request) => {
 
   const hashPassword = await bcrypt.hash(req.body.password, 10);
 
-  const result = await prisma.$transaction(async (tnx) => {
+  const result = await prisma.$transaction(async (tnx: any) => {
     await tnx.user.create({
       data: {
         email: req.body.doctor.email,
@@ -59,7 +58,7 @@ const createAdmin = async (req: Request) => {
 
   const hashPassword = await bcrypt.hash(req.body.password, 10);
 
-  const result = await prisma.$transaction(async (tnx) => {
+  const result = await prisma.$transaction(async (tnx: any) => {
     
     await tnx.user.create({
       data: {
