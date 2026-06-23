@@ -77,12 +77,34 @@ const createAdmin = async (req: Request) => {
 const getAllFromDb = async ({
   page,
   limit,
+  sortBy,
+  sortOrder,
+  searchTerm,
 }: {
   page: number;
   limit: number;
+  sortBy?: "asc" | "desc";
+  sortOrder?: string;
+  searchTerm?: string;
 }) => {
   const skip = (page - 1) * limit;
-  const result = await prisma.user.findMany({ skip, take: page });
+  const result = await prisma.user.findMany({
+    skip,
+    take: limit,
+    where: searchTerm
+      ? {
+          email: {
+            contains: searchTerm,
+            mode: "insensitive",
+          },
+        }
+      : {},
+    orderBy: sortBy
+      ? {
+          [sortBy]: sortOrder,
+        }
+      : {},
+  });
   return result;
 };
 

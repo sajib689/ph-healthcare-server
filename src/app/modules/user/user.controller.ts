@@ -41,10 +41,15 @@ const createAdmin = catchAsync(async (req: Request, res: Response) => {
 const getAllFromDb = catchAsync(async (req: Request, res: Response) => {
   const page = Number(req.query.page)
   const limit = Number(req.query.limit)
+  const sortBy = req.query.sortBy as "asc" || "desc"
+  const sortOrder = req.query.sortOrder as string
+  const searchTerm = req.query.searchTerm as string
 
   const result = await userService.getAllFromDb({
     page,
-    limit
+    limit,
+    sortBy,
+    sortOrder
   })
 
   sendResponse(res, {
