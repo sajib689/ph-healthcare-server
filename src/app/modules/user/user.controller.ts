@@ -49,7 +49,8 @@ const getAllFromDb = catchAsync(async (req: Request, res: Response) => {
     page,
     limit,
     sortBy,
-    sortOrder
+    sortOrder,
+    searchTerm
   })
 
   sendResponse(res, {
