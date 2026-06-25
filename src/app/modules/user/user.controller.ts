@@ -44,13 +44,17 @@ const getAllFromDb = catchAsync(async (req: Request, res: Response) => {
   const sortBy = req.query.sortBy as "asc" || "desc"
   const sortOrder = req.query.sortOrder as string
   const searchTerm = req.query.searchTerm as string
-
+  const role = req.query.role as string
+  const status = req.query.status as string
+  
   const result = await userService.getAllFromDb({
     page,
     limit,
     sortBy,
     sortOrder,
-    searchTerm
+    searchTerm,
+    role,
+    status
   })
 
   sendResponse(res, {
