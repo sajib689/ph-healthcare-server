@@ -2,6 +2,7 @@ import { Request } from "express";
 import { prisma } from "../../shared/prisma";
 import bcrypt from "bcrypt";
 import { fileUploader } from "../../helper/fileUpload";
+import { Prisma, Role, Status } from "@prisma/client";
 
 const createPatient = async (req: Request) => {
   if (req.file) {
@@ -59,7 +60,6 @@ const createAdmin = async (req: Request) => {
   const hashPassword = await bcrypt.hash(req.body.password, 10);
 
   const result = await prisma.$transaction(async (tnx: any) => {
-    
     await tnx.user.create({
       data: {
         email: req.body.admin.email,
@@ -75,8 +75,56 @@ const createAdmin = async (req: Request) => {
   return result;
 };
 
+const getAllFromDb = async ({
+  page,
+  limit,
+  sortBy,
+  sortOrder,
+  searchTerm,
+  role,
+  status,
+}: {
+  page: number;
+  limit: number;
+  sortBy?: "asc" | "desc";
+  sortOrder?: string;
+  searchTerm?: string;
+  role?: string;
+  status?: string;
+}) => {
+  const skip = (page - 1) * limit;
+
+  const where: Prisma.UserWhereInput = {
+    ...(searchTerm && {
+      email: {
+        contains: searchTerm,
+        mode: "insensitive",
+      },
+    }),
+    ...(role && {
+      role: role as Role,
+    }),
+    ...(status && {
+      status: status as Status,
+    }),
+  };
+
+  const result = await prisma.user.findMany({
+    skip,
+    take: limit,
+    where,
+    orderBy: sortBy
+      ? {
+          [sortBy]: sortOrder,
+        }
+      : {},
+  });
+  return result;
+};
+
 export const userService = {
   createPatient,
   createDoctor,
   createAdmin,
+  getAllFromDb,
 };

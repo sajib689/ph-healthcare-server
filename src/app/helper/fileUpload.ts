@@ -5,7 +5,7 @@ import config from "../../config";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(process.cwd(), "/uploads"));
+    cb(null, path.join( process.cwd(), "/uploads"));
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -31,7 +31,7 @@ const uploadFileToCloudinary = async (file: Express.Multer.File) => {
     .catch((error) => {
       console.log(error);
     });
-    console.log(uploadResult)
+    // console.log(uploadResult)
     return uploadResult
 };
 

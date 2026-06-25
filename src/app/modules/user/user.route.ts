@@ -23,4 +23,7 @@ router.post("/create-admin", fileUploader.upload.single("file"), (
   )
 })
 
+router.get("/all-users", userController.getAllFromDb)
+
+
 export const userRoute = router;
