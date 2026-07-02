@@ -83,7 +83,10 @@ const getAllFromDb = async (params: any, options: IOptions) => {
     paginationHelper.calculatePagination(options);
   const { searchTerm, ...filterData } = params;
 
-  const andConditions: Prisma.UserWhereInput[] = [];
+  const andConditions: Prisma.UserWhereInput[] = []
+  const whereConditions: Prisma.UserWhereInput = andConditions.length > 0 ? {
+    AND: andConditions
+  }: {}
 
   if (searchTerm) {
     andConditions.push({
@@ -109,11 +112,22 @@ const getAllFromDb = async (params: any, options: IOptions) => {
   const result = await prisma.user.findMany({
     skip: page,
     take: limit,
-    where: {
-      AND: andConditions,
-    },
+    where: whereConditions,
+    orderBy: {
+      [sortBy]: sortOrder,
+    }
   });
-  return result;
+  const total = await prisma.user.count({
+    where: whereConditions,
+  })
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data:result
+  }
 };
 
 export const userService = {

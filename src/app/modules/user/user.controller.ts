@@ -50,7 +50,8 @@ const getAllFromDb = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: 201,
-    data: result,
+    meta: result.meta,
+    data: result.data,
     message: "Users retrieved successfully."
   })
 
