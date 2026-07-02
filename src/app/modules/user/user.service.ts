@@ -79,14 +79,12 @@ const createAdmin = async (req: Request) => {
 };
 
 const getAllFromDb = async (params: any, options: IOptions) => {
-  const { page, limit, sortBy, sortOrder } =
+  const { page, limit,skip, sortBy, sortOrder } =
     paginationHelper.calculatePagination(options);
   const { searchTerm, ...filterData } = params;
 
   const andConditions: Prisma.UserWhereInput[] = []
-  const whereConditions: Prisma.UserWhereInput = andConditions.length > 0 ? {
-    AND: andConditions
-  }: {}
+
 
   if (searchTerm) {
     andConditions.push({
@@ -109,14 +107,18 @@ const getAllFromDb = async (params: any, options: IOptions) => {
     });
   }
 
+    const whereConditions: Prisma.UserWhereInput = andConditions.length > 0 ? {
+    AND: andConditions
+  }: {}
   const result = await prisma.user.findMany({
-    skip: page,
+    skip,
     take: limit,
     where: whereConditions,
     orderBy: {
       [sortBy]: sortOrder,
     }
   });
+  console.log("result", result)
   const total = await prisma.user.count({
     where: whereConditions,
   })
