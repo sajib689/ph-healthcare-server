@@ -2,10 +2,9 @@ import { Request } from "express";
 import { prisma } from "../../shared/prisma";
 import bcrypt from "bcrypt";
 import { fileUploader } from "../../helper/fileUpload";
-import { Prisma, Role, Status } from "@prisma/client";
+import { Prisma} from "@prisma/client";
 import { IOptions, paginationHelper } from "../../helper/paginationHelper";
 import { userSearchableFields } from "./user.constant";
-import { object } from "zod";
 
 const createPatient = async (req: Request) => {
   if (req.file) {
