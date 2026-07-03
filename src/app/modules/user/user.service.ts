@@ -118,7 +118,6 @@ const getAllFromDb = async (params: any, options: IOptions) => {
       [sortBy]: sortOrder,
     }
   });
-  console.log("result", result)
   const total = await prisma.user.count({
     where: whereConditions,
   })
