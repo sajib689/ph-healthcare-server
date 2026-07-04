@@ -2,7 +2,9 @@ import { Request } from "express";
 import { prisma } from "../../shared/prisma";
 import bcrypt from "bcrypt";
 import { fileUploader } from "../../helper/fileUpload";
-import { Prisma, Role, Status } from "@prisma/client";
+import { Prisma} from "@prisma/client";
+import { IOptions, paginationHelper } from "../../helper/paginationHelper";
+import { userSearchableFields } from "./user.constant";
 
 const createPatient = async (req: Request) => {
   if (req.file) {
@@ -75,51 +77,57 @@ const createAdmin = async (req: Request) => {
   return result;
 };
 
-const getAllFromDb = async ({
-  page,
-  limit,
-  sortBy,
-  sortOrder,
-  searchTerm,
-  role,
-  status,
-}: {
-  page: number;
-  limit: number;
-  sortBy?: "asc" | "desc";
-  sortOrder?: string;
-  searchTerm?: string;
-  role?: string;
-  status?: string;
-}) => {
-  const skip = (page - 1) * limit;
+const getAllFromDb = async (params: any, options: IOptions) => {
+  const { page, limit,skip, sortBy, sortOrder } =
+    paginationHelper.calculatePagination(options);
+  const { searchTerm, ...filterData } = params;
 
-  const where: Prisma.UserWhereInput = {
-    ...(searchTerm && {
-      email: {
-        contains: searchTerm,
-        mode: "insensitive",
-      },
-    }),
-    ...(role && {
-      role: role as Role,
-    }),
-    ...(status && {
-      status: status as Status,
-    }),
-  };
+  const andConditions: Prisma.UserWhereInput[] = []
 
+
+  if (searchTerm) {
+    andConditions.push({
+      OR: userSearchableFields.map((field) => ({
+        [field]: {
+          contains: searchTerm,
+          mode: "insensitive",
+        },
+      })),
+    });
+  }
+
+  if (Object.keys(filterData).length > 0) {
+    andConditions.push({
+      AND: Object.keys(filterData).map((key) => ({
+        [key]: {
+          equals: (filterData as any)[key],
+        },
+      })),
+    });
+  }
+
+    const whereConditions: Prisma.UserWhereInput = andConditions.length > 0 ? {
+    AND: andConditions
+  }: {}
   const result = await prisma.user.findMany({
     skip,
     take: limit,
-    where,
-    orderBy: sortBy
-      ? {
-          [sortBy]: sortOrder,
-        }
-      : {},
+    where: whereConditions,
+    orderBy: {
+      [sortBy]: sortOrder,
+    }
   });
-  return result;
+  const total = await prisma.user.count({
+    where: whereConditions,
+  })
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data:result
+  }
 };
 
 export const userService = {
