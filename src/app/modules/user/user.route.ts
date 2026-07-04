@@ -18,10 +18,21 @@ router.post(
 );
 
 router.post(
-  "/create-admin",auth(Role.ADMIN),
+  "/create-admin",
+  auth(Role.ADMIN),
   fileUploader.upload.single("file"),
   (req: Request, res: Response, next: NextFunction) => {
     req.body = UserValidation.createAdminValidationSchema.parse(
+      JSON.parse(req.body.data),
+    );
+  },
+);
+router.post(
+  "/create-doctor",
+  auth(Role.ADMIN),
+  fileUploader.upload.single("file"),
+  (req: Request, res: Response, next: NextFunction) => {
+    req.body = UserValidation.createDoctorValidationSchema.parse(
       JSON.parse(req.body.data),
     );
   },
