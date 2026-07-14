@@ -14,6 +14,20 @@ const insertIntoDb = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const doctorSchedule = catchAsync(async (req: Request, res: Response) => {
+  const doctorId = req.params.doctorId;
+  const data = await ScheduleService.scheduleForDoctor(doctorId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Doctor's schedule retrieved successfully",
+    data: data,
+  });
+
+});
+
 export const ScheduleController = {
   insertIntoDb,
+  doctorSchedule,
 };

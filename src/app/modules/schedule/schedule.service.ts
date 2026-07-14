@@ -62,6 +62,11 @@ const insertIntoDb = async (payload: any) => {
   return schedules;
 };
 
+const scheduleForDoctor = async (doctorId: string) => {
+  console.log("doctorId", doctorId);
+};
+
 export const ScheduleService = {
   insertIntoDb,
+  scheduleForDoctor,
 };
