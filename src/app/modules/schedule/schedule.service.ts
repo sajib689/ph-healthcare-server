@@ -71,6 +71,7 @@ const scheduleForDoctor = async (options: IOptions, filters: any) => {
     filters;
 
   const andConditions: Prisma.ScheduleWhereInput[] = [];
+
   if (filterStartDateTime && filterEndDateTime) {
     andConditions.push({
       AND: [
@@ -106,6 +107,7 @@ const scheduleForDoctor = async (options: IOptions, filters: any) => {
   const total = await prisma.schedule.count({
     where: whereConditions,
   });
+
   return {
     meta: {
       total,
@@ -114,10 +116,19 @@ const scheduleForDoctor = async (options: IOptions, filters: any) => {
     },
     data: result,
   };
-  
+};
+
+const deleteScheduleFromDb = async (scheduleId: string) => {
+  const result = await prisma.schedule.delete({
+    where: {
+      id: scheduleId,
+    },
+  });
+  return result;
 };
 
 export const ScheduleService = {
   insertIntoDb,
   scheduleForDoctor,
+  deleteScheduleFromDb,
 };
