@@ -21,7 +21,7 @@ const doctorSchedule = catchAsync(async (req: Request & {user?: IJWTPayload}, re
   const filters = pick(req.query, ["startDateTime", "endDateTime"]);
 
   const user = req.user 
-
+  
   const result = await ScheduleService.scheduleForDoctor(user as IJWTPayload, options, filters);
 
   sendResponse(res, {
