@@ -14,7 +14,7 @@ const auth = (...roles: string[]) => {
 
       if (!token) {
         throw new ApiError(
-          httpStatus.BAD_REQUEST,
+          httpStatus.UNAUTHORIZED,
           "You are not authorized to access this route",
         );
       }
@@ -22,14 +22,14 @@ const auth = (...roles: string[]) => {
       const jwtSecret = process.env.JWT_TOKEN;
 
       if (!jwtSecret) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "JWT_TOKEN is not defined");
+        throw new ApiError(httpStatus.UNAUTHORIZED, "JWT_TOKEN is not defined");
       }
 
       const decoded = jwtHelper.verifyToken(token, jwtSecret);
 
       req.user = decoded;
       if (roles.length && !roles.includes(decoded.role)) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "You are not authorized");
+        throw new ApiError(httpStatus.UNAUTHORIZED, "You are not authorized");
       }
       next();
     } catch (error) {
