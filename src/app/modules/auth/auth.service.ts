@@ -2,10 +2,11 @@ import { prisma } from "../../shared/prisma";
 import bcrypt from "bcrypt";
 import config from "../../../config";
 import { jwtHelper } from "../../helper/jwtHelper";
-import { Status } from '@prisma/client';
+import { Status } from "@prisma/client";
+import ApiError from "../../errors/ApiError";
+import httpStatus from "http-status";
 
 const login = async (payload: { email: string; password: string }) => {
-    
   const user = await prisma.user.findUnique({
     where: {
       email: payload.email,
@@ -23,11 +24,12 @@ const login = async (payload: { email: string; password: string }) => {
   );
 
   if (!isCorrectPassword) {
-    throw new Error("Password or email invalid");
+    throw new ApiError(httpStatus.BAD_REQUEST, "Password or email invalid");
   }
 
   const accessToken = jwtHelper.generateToken(
     {
+      id: user?.id,
       email: user?.email,
       role: user?.role,
     },
@@ -37,6 +39,7 @@ const login = async (payload: { email: string; password: string }) => {
 
   const refreshToken = jwtHelper.generateToken(
     {
+      id: user?.id,
       email: user?.email,
       role: user?.role,
     },
