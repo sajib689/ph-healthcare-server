@@ -2,7 +2,7 @@ import { Request } from "express";
 import { prisma } from "../../shared/prisma";
 import bcrypt from "bcrypt";
 import { fileUploader } from "../../helper/fileUpload";
-import { Prisma} from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 import { IOptions, paginationHelper } from "../../helper/paginationHelper";
 import { userSearchableFields } from "./user.constant";
 
@@ -43,6 +43,7 @@ const createDoctor = async (req: Request) => {
       data: {
         email: req.body.doctor.email,
         password: hashPassword,
+        role: Role.DOCTOR
       },
     });
     return await tnx.doctor.create({
@@ -66,6 +67,7 @@ const createAdmin = async (req: Request) => {
       data: {
         email: req.body.admin.email,
         password: hashPassword,
+         role: Role.ADMIN
       },
     });
 
@@ -78,12 +80,11 @@ const createAdmin = async (req: Request) => {
 };
 
 const getAllFromDb = async (params: any, options: IOptions) => {
-  const { page, limit,skip, sortBy, sortOrder } =
+  const { page, limit, skip, sortBy, sortOrder } =
     paginationHelper.calculatePagination(options);
   const { searchTerm, ...filterData } = params;
 
-  const andConditions: Prisma.UserWhereInput[] = []
-
+  const andConditions: Prisma.UserWhereInput[] = [];
 
   if (searchTerm) {
     andConditions.push({
@@ -106,28 +107,31 @@ const getAllFromDb = async (params: any, options: IOptions) => {
     });
   }
 
-    const whereConditions: Prisma.UserWhereInput = andConditions.length > 0 ? {
-    AND: andConditions
-  }: {}
+  const whereConditions: Prisma.UserWhereInput =
+    andConditions.length > 0
+      ? {
+          AND: andConditions,
+        }
+      : {};
   const result = await prisma.user.findMany({
     skip,
     take: limit,
     where: whereConditions,
     orderBy: {
       [sortBy]: sortOrder,
-    }
+    },
   });
   const total = await prisma.user.count({
     where: whereConditions,
-  })
+  });
   return {
     meta: {
       page,
       limit,
       total,
     },
-    data:result
-  }
+    data: result,
+  };
 };
 
 export const userService = {

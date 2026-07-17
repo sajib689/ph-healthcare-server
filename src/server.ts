@@ -2,6 +2,7 @@ import { Server } from "http";
 import app from "./app";
 import config from "./config";
 import "dotenv/config";
+import seedAdmin from "./app/helper/seedAdmin";
 
 async function bootstrap() {
   // This variable will hold our server instance
@@ -9,6 +10,7 @@ async function bootstrap() {
 
   try {
     // Start the server
+    await seedAdmin()
     server = app.listen(config.port, () => {
       console.log(`🚀 Server is running on http://localhost:${config.port}`);
     });
