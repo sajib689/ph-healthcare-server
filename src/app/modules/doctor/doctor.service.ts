@@ -3,7 +3,7 @@ import { IOptions, paginationHelper } from "../../helper/paginationHelper";
 import { doctorSearchableFields } from "./doctor.conosten";
 import { prisma } from "../../shared/prisma";
 
-const insertToDb = async (filters: any, options: IOptions) => {
+const getFromDb = async (filters: any, options: IOptions) => {
   // pagination and filter get from the controller
   const { page, limit, skip, sortBy, sortOrder } =
     paginationHelper.calculatePagination(options);
@@ -59,5 +59,5 @@ const insertToDb = async (filters: any, options: IOptions) => {
 };
 
 export const DoctorService = {
-  insertToDb,
+  getFromDb,
 };

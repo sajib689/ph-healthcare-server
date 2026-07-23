@@ -3,9 +3,7 @@ import { userRoute } from "../modules/user/user.route";
 import { authRoutes } from "../modules/auth/auth.route";
 import { scheduleRoute } from "../modules/schedule/schedule.route";
 import { doctorScheduleRoute } from "../modules/doctorSchedule/doctorSchedule.route";
-
 import { specialtiesRoute } from "../modules/specialties/specialties.route";
-import path from "node:path";
 import { doctorRoute } from "../modules/doctor/doctor.route";
 
 const router = express.Router();
