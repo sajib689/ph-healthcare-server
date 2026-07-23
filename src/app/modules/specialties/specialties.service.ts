@@ -14,10 +14,22 @@ const insertSpecialties = async (req: Request) => {
   return result;
 };
 
-const getAllFromDb = async (req: Request, res: Response) => {
-    
+const getAllFromDb = async () => {
+  const result = await prisma.specialties.findMany();
+  return result;
+};
+
+const deleteSpecialties = async (id: string) => {
+  const result = await prisma.specialties.delete({
+    where: {
+      id
+    }
+  })
+  return result
 }
 
 export const SpecialtiesService = {
   insertSpecialties,
+  getAllFromDb,
+  deleteSpecialties
 };
