@@ -13,12 +13,14 @@ const getFromDb = async (filters: any, options: IOptions) => {
 
   //   searchTerm wise work
   if (searchTerm) {
-    OR: doctorSearchableFields.map((filed) => ({
+    andCondition.push({
+      OR: doctorSearchableFields.map((filed) => ({
       [filed]: {
         contains: searchTerm,
         mode: "insensitive",
       },
-    }));
+    }))
+    })
   }
 
   //   filter wise work
