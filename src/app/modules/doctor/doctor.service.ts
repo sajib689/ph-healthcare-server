@@ -2,6 +2,7 @@ import { Doctor, Prisma } from "@prisma/client";
 import { IOptions, paginationHelper } from "../../helper/paginationHelper";
 import { doctorSearchableFields } from "./doctor.conosten";
 import { prisma } from "../../shared/prisma";
+import { IDoctorUpdateInput } from "./doctor.interface";
 
 const getFromDb = async (filters: any, options: IOptions) => {
   // pagination and filter get from the controller
@@ -61,8 +62,8 @@ const getFromDb = async (filters: any, options: IOptions) => {
 };
 
 
-const updateDoctor = async (id: string, payload: Partial<Doctor>) => {
-  console.log(id)
+const updateDoctor = async (id: string, payload: Partial<IDoctorUpdateInput>) => {
+  
   const doctorInfo = await prisma.doctor.findFirstOrThrow({
     where: {
       id
