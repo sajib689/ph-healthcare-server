@@ -13,5 +13,5 @@ export const doctorSearchableFields = [
   "contactNumber",
   "gender",
   // "appointmentFee",
-  "specialties",
+  // "specialties",
 ];
