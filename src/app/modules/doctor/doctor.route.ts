@@ -5,5 +5,8 @@ const router = express.Router();
 
 router.get("/", DoctorController.getFromDb);
 router.patch("/:id", DoctorController.updateDoctor);
+router.get("/:id", DoctorController.getSingleDoctor)
+router.delete("/:id", DoctorController.deleteDoctor)
+
 
 export const doctorRoute = router;
