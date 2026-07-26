@@ -25,6 +25,7 @@ router.post(
     req.body = UserValidation.createAdminValidationSchema.parse(
       JSON.parse(req.body.data),
     );
+    return userController.createAdmin(req, res, next);
   },
 );
 router.post(
@@ -35,6 +36,7 @@ router.post(
     req.body = UserValidation.createDoctorValidationSchema.parse(
       JSON.parse(req.body.data),
     );
+    return userController.createDoctor(req, res, next);
   },
 );
 
