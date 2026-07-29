@@ -29,6 +29,20 @@ const getAllFromDb = async ({
     });
   }
 
+  if (Object.keys(filterData).length > 0) {
+    andConditions.push({
+      AND: Object.keys(filterData).map((key) => ({
+        [key]: {
+          equals: (filterData as any)[key],
+        },
+      })),
+    });
+  }
+  
+  andConditions.push({
+    isDeleted: false,
+  });
+
   const whereConditions: Prisma.AdminWhereInput =
     andConditions.length > 0 ? { AND: andConditions } : {};
 
@@ -119,7 +133,6 @@ const softDeleteAdmin = async (id: string): Promise<Admin | null> => {
   });
 
   const result = await prisma.$transaction(async (tnx) => {
-
     const deleteAdmin = await tnx.admin.update({
       where: {
         id,
@@ -137,7 +150,7 @@ const softDeleteAdmin = async (id: string): Promise<Admin | null> => {
         status: Status.DELETED,
       },
     });
-    
+
     return deleteAdmin;
   });
   return result;
@@ -148,5 +161,5 @@ export const AdminService = {
   getSingleAdmin,
   deleteAdmin,
   updateAdmin,
-  softDeleteAdmin
+  softDeleteAdmin,
 };
