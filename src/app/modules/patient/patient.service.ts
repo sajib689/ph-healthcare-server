@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Patient, Prisma, Status } from "@prisma/client";
 import { IOptions, paginationHelper } from "../../helper/paginationHelper";
 import { prisma } from "../../shared/prisma";
 import { patientSearchableFields } from "./patient.conostent";
@@ -47,22 +47,36 @@ const getAllPatient = async (options: IOptions, filters: any) => {
   };
 };
 
-const getSinglePatient = async (id: string) => {
-    const result = await prisma.patient.findFirstOrThrow({
+const getSinglePatient =  async (id: string): Promise<Patient | null> => {
+    const result = await prisma.patient.findUnique({
         where: {
-            id
-        }
-    })
-    return result
-}
+            id,
+            isDeleted: false,
+        },
+    });
+    return result;
+};
 
 const deletePatient = async (id: string) => {
-    const result = await prisma.patient.delete({
-        where: {
-            id
-        }
+    return await prisma.$transaction(async (tnx) => {
+        const deletePatient = await tnx.patient.update({
+            where: {
+                id
+            },
+            data: {
+                isDeleted: true
+            }
+        })
+        await tnx.user.update({
+            where: {
+                email: deletePatient.email
+            },
+            data: {
+                status: Status.DELETED
+            }
+        })
+        return deletePatient
     })
-    return result
 }
 
 export const PatientService = {
