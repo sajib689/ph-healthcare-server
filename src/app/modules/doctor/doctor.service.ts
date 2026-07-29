@@ -6,8 +6,7 @@ import { IDoctorUpdateInput } from "./doctor.interface";
 
 const getFromDb = async (filters: any, options: IOptions) => {
   // pagination and filter get from the controller
-  const { page, limit, skip, sortBy, sortOrder } =
-    paginationHelper.calculatePagination(options);
+  const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options);
   const { searchTerm, ...filtersData } = filters;
 
   const andCondition: Prisma.DoctorWhereInput[] = [];
@@ -34,8 +33,7 @@ const getFromDb = async (filters: any, options: IOptions) => {
     andCondition.push(...filterConditions);
   }
 
-  const whereCondition: Prisma.DoctorWhereInput =
-    andCondition.length > 0 ? { AND: andCondition } : {};
+  const whereCondition: Prisma.DoctorWhereInput = andCondition.length > 0 ? { AND: andCondition } : {};
 
   const result = await prisma.doctor.findMany({
     where: whereCondition,

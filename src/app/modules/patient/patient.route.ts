@@ -1,5 +1,10 @@
-import express from "express"
+import express from "express";
+import { PatientController } from "./patient.controller";
 
-const router = express.Router()
+const router = express.Router();
 
-export const patientRouter = router
+router.get("/", PatientController.getAllPatient);
+router.get("/:id", PatientController.getSinglePatient)
+router.delete("/:id", PatientController.deletePatient)
+
+export const patientRouter = router;
