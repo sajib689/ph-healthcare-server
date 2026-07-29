@@ -8,6 +8,6 @@ router.patch("/:id", DoctorController.updateDoctor);
 router.get("/:id", DoctorController.getSingleDoctor)
 router.delete("/:id", DoctorController.deleteDoctor)
 
-router.post("/suggestion")
+router.post("/suggestion", DoctorController.getAiSuggestion)
 
 export const doctorRoute = router;

@@ -3,10 +3,14 @@ import { IOptions, paginationHelper } from "../../helper/paginationHelper";
 import { doctorSearchableFields } from "./doctor.conosten";
 import { prisma } from "../../shared/prisma";
 import { IDoctorUpdateInput } from "./doctor.interface";
+import ApiError from "../../errors/ApiError";
+import httpStatus from "http-status";
+import { openai } from "../../helper/openRouter";
 
 const getFromDb = async (filters: any, options: IOptions) => {
   // pagination and filter get from the controller
-  const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options);
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelper.calculatePagination(options);
   const { searchTerm, ...filtersData } = filters;
 
   const andCondition: Prisma.DoctorWhereInput[] = [];
@@ -33,7 +37,8 @@ const getFromDb = async (filters: any, options: IOptions) => {
     andCondition.push(...filterConditions);
   }
 
-  const whereCondition: Prisma.DoctorWhereInput = andCondition.length > 0 ? { AND: andCondition } : {};
+  const whereCondition: Prisma.DoctorWhereInput =
+    andCondition.length > 0 ? { AND: andCondition } : {};
 
   const result = await prisma.doctor.findMany({
     where: whereCondition,
@@ -136,9 +141,60 @@ const deleteDoctor = async (id: string) => {
   return result;
 };
 
+const getAiSuggestion = async (payload: { symptoms: string }) => {
+    if (!(payload && payload.symptoms)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "symptoms is required!")
+    };
+
+    const doctors = await prisma.doctor.findMany({
+        where: { isDeleted: false },
+        include: {
+            doctorSpecialties: {
+                include: {
+                   specialties: true
+                }
+            }
+        }
+    });
+
+    console.log("doctors data loaded.......\n");
+    const prompt = `
+You are a medical assistant AI. Based on the patient's symptoms, suggest the top 3 most suitable doctors.
+Each doctor has specialties and years of experience.
+Only suggest doctors who are relevant to the given symptoms.
+
+Symptoms: ${payload.symptoms}
+
+Here is the doctor list (in JSON):
+${JSON.stringify(doctors, null, 2)}
+
+Return your response in JSON format with full individual doctor data. 
+`;
+
+    console.log("analyzing......\n")
+    const completion = await openai.chat.completions.create({
+        model: 'openai/gpt-oss-20b:free',
+        messages: [
+            {
+                role: "system",
+                content:
+                    "You are a helpful AI medical assistant that provides doctor suggestions.",
+            },
+            {
+                role: 'user',
+                content: prompt,
+            },
+        ],
+    });
+console.log(completion.choices[0].message)
+    // const result = await extractJsonFromMessage(completion.choices[0].message)
+    // return result;
+}
+
 export const DoctorService = {
   getFromDb,
   updateDoctor,
   getSingleDoctor,
   deleteDoctor,
+  getAiSuggestion,
 };
