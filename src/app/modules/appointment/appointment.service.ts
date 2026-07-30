@@ -1,5 +1,5 @@
 
-const insertAppointments = () => {
+const insertAppointments = (payload) => {
 
 }
 
