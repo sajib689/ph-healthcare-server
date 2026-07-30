@@ -15,6 +15,7 @@ export default {
   JWT_TOKEN: process.env.JWT_TOKEN as string,
   JWT_REFRESH_TOKEN: process.env.JWT_REFRESH_TOKEN as string,
   OPEN_ROUTER_API_KEY: process.env.OPEN_ROUTER_API_KEY,
-  GEMINI_API_KEY: process.env.GEMINI_API_KEY
-
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+  CLIENT_URL: process.env.CLIENT_URL,
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
 };

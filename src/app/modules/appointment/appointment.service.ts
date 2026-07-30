@@ -4,6 +4,7 @@ import httpStatus from "http-status";
 import ApiError from "../../errors/ApiError";
 import { prisma } from "../../shared/prisma";
 import { IJWTPayload } from "../../types/common";
+import { stripe } from "../../helper/stripe";
 
 const insertAppointments = async (user: IJWTPayload, payload: any) => {
   if (!user?.email) {
@@ -82,6 +83,32 @@ const insertAppointments = async (user: IJWTPayload, payload: any) => {
       },
     });
 
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+      customer_email: user.email,
+
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            unit_amount: Math.round(doctorData.appointmentFee * 100),
+            product_data: {
+              name: `Appointment with Dr. ${doctorData.name}`,
+            },
+          },
+          quantity: 1
+        },
+      ],
+
+      success_url: `${process.env.CLIENT_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+
+      cancel_url: `${process.env.CLIENT_URL}/payment/cancel`,
+
+    });
+
+    // return session.url;
+
     return appointment;
   });
 };
@@ -120,7 +147,7 @@ const getAllFromDb = async (user: IJWTPayload) => {
         patient: true,
         doctor: true,
         schedule: true,
-        payments: true
+        payments: true,
       },
     });
   }
