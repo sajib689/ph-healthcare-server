@@ -3,10 +3,12 @@ import catchAsync from "../../shared/catchAsync";
 import { AppointmentService } from "./appointment.service";
 import sendResponse from "../../shared/sendResponse";
 import  httpStatus  from 'http-status';
+import { IJWTPayload } from "../../types/common";
 
-const insertAppointments = catchAsync(async (req: Request, res: Response) => {
+const insertAppointments = catchAsync(async (req: Request & {user?: IJWTPayload}, res: Response) => {
+    const user = req.user
 
-    const result = await AppointmentService.insertAppointments(req.body)
+    const result = await AppointmentService.insertAppointments(user as IJWTPayload,req.body)
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
@@ -15,6 +17,20 @@ const insertAppointments = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
+const getAllAppointments = catchAsync(async (req: Request & {user?: IJWTPayload}, res: Response) => {
+    const user = req.user
+
+    const result = await AppointmentService.getAllFromDb(user as IJWTPayload)
+
+      sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Appointment retrieved successfully!",
+        data: result
+    })
+})
+
 export const AppointmentsController = {
-    insertAppointments
+    insertAppointments,
+    getAllAppointments
 }

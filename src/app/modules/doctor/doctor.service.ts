@@ -5,8 +5,8 @@ import { prisma } from "../../shared/prisma";
 import { IDoctorUpdateInput } from "./doctor.interface";
 import ApiError from "../../errors/ApiError";
 import httpStatus from "http-status";
-import { openai } from "../../helper/openRouter";
-import { extractJsonFromMessage } from "../../helper/extractJsonFromMessage";
+// import { openai } from "../../helper/openRouter";
+// import { extractJsonFromMessage } from "../../helper/extractJsonFromMessage";
 import { gemini } from "../../helper/geminiRouter";
 
 const getFromDb = async (filters: any, options: IOptions) => {
@@ -49,6 +49,18 @@ const getFromDb = async (filters: any, options: IOptions) => {
     orderBy: {
       [sortBy]: sortOrder,
     },
+    include: {
+      doctorSpecialties: {
+        include: {
+          specialties: true
+        }
+      },
+      doctorSchedule: {
+        include: {
+          schedule: true
+        }
+      }
+    }
   });
 
   const doctorCount = await prisma.doctor.count({
@@ -118,6 +130,11 @@ const updateDoctor = async (
             specialties: true,
           },
         },
+        doctorSchedule: {
+          include: {
+            schedule: true
+          }
+        }
       },
     });
 
@@ -126,11 +143,26 @@ const updateDoctor = async (
 };
 
 const getSingleDoctor = async (id: string) => {
-  const result = await prisma.doctor.findFirstOrThrow({
+  
+  const result = await prisma.doctor.findUnique({
     where: {
       id,
+      isDeleted: false,
+    },
+    include: {
+      doctorSpecialties: {
+        include: {
+          specialties: true,
+        },
+      },
+      doctorSchedule: {
+        include: {
+          schedule: true,
+        },
+      },
     },
   });
+
   return result;
 };
 
@@ -174,7 +206,7 @@ Return your response in JSON format with full individual doctor data.
 `;
 
   console.log("analyzing......\n");
-  
+
   const response = await gemini.models.generateContent({
     model: "gemini-3.6-flash",
     contents: prompt,

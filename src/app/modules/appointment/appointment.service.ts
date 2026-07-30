@@ -1,11 +1,141 @@
+import { randomUUID } from "node:crypto";
+import { AppointmentStatus, PaymentStatus } from "@prisma/client";
+import httpStatus from "http-status";
+import ApiError from "../../errors/ApiError";
 import { prisma } from "../../shared/prisma";
+import { IJWTPayload } from "../../types/common";
 
-const insertAppointments = async (payload: any) => {
-    
-  const result = await prisma.appointment.create(payload);
-  return result;
+const insertAppointments = async (user: IJWTPayload, payload: any) => {
+  if (!user?.email) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "User information is missing.");
+  }
+
+  if (!payload?.doctorId || !payload?.scheduleId) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "doctorId and scheduleId are required.",
+    );
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const patientData = await tx.patient.findUniqueOrThrow({
+      where: {
+        email: user.email,
+      },
+    });
+
+    const doctorData = await tx.doctor.findUniqueOrThrow({
+      where: {
+        id: payload.doctorId,
+        isDeleted: false,
+      },
+    });
+
+    const availableSchedule = await tx.doctorSchedule.findFirst({
+      where: {
+        doctorId: payload.doctorId,
+        scheduleId: payload.scheduleId,
+        isBooked: false,
+      },
+    });
+
+    if (!availableSchedule) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Selected schedule is not available.",
+      );
+    }
+
+    const videoCallingId = randomUUID();
+
+    const appointment = await tx.appointment.create({
+      data: {
+        patientId: patientData.id,
+        doctorId: doctorData.id,
+        scheduleId: payload.scheduleId,
+        videoCallingId,
+        status: AppointmentStatus.SCHEDULED,
+        paymentStatus: PaymentStatus.UNPAID,
+      },
+    });
+
+    await tx.doctorSchedule.update({
+      where: {
+        doctorId_scheduleId: {
+          doctorId: payload.doctorId,
+          scheduleId: payload.scheduleId,
+        },
+      },
+      data: {
+        isBooked: true,
+      },
+    });
+
+    return appointment;
+  });
+};
+
+const getAllFromDb = async (user: IJWTPayload) => {
+  if (!user) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Unauthorized");
+  }
+
+  // Admin
+  if (user.role === "ADMIN") {
+    return prisma.appointment.findMany({
+      include: {
+        patient: true,
+        doctor: true,
+        schedule: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }
+
+  if (user.role === "PATIENT") {
+    const patient = await prisma.patient.findUniqueOrThrow({
+      where: {
+        email: user.email,
+      },
+    });
+
+    return prisma.appointment.findMany({
+      where: {
+        patientId: patient.id,
+      },
+      include: {
+        patient: true,
+        doctor: true,
+        schedule: true,
+      },
+    });
+  }
+
+  if (user.role === "DOCTOR") {
+    const doctor = await prisma.doctor.findUniqueOrThrow({
+      where: {
+        email: user.email,
+      },
+    });
+
+    return prisma.appointment.findMany({
+      where: {
+        doctorId: doctor.id,
+      },
+      include: {
+        patient: true,
+        doctor: true,
+        schedule: true,
+      },
+    });
+  }
+
+  throw new ApiError(httpStatus.FORBIDDEN, "Invalid role");
 };
 
 export const AppointmentService = {
   insertAppointments,
+  getAllFromDb,
 };
