@@ -7,5 +7,7 @@ const router = express.Router()
 
 router.post("/",auth(Role.PATIENT), AppointmentsController.insertAppointments)
 router.get("/",auth(Role.PATIENT, Role.DOCTOR), AppointmentsController.getAllAppointments)
+router.delete("/:id",auth(Role.ADMIN), AppointmentsController.deleteAppointments)
+
 
 export const appointmentRoute = router

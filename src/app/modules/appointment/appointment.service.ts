@@ -135,7 +135,40 @@ const getAllFromDb = async (user: IJWTPayload) => {
   throw new ApiError(httpStatus.FORBIDDEN, "Invalid role");
 };
 
+const deleteAppointment = async (id: string) => {
+  if (!id) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Id is missing!");
+  }
+
+  const result = await prisma.$transaction(async (tnx) => {
+    const appointments = await tnx.appointment.findUniqueOrThrow({
+      where: {
+        id,
+      },
+    });
+
+    await tnx.doctorSchedule.update({
+      where: {
+        doctorId_scheduleId: {
+          doctorId: appointments.doctorId,
+          scheduleId: appointments.scheduleId,
+        },
+      },
+      data: {
+        isBooked: false,
+      },
+    });
+    return tnx.appointment.delete({
+      where: {
+        id,
+      },
+    });
+  });
+  return result;
+};
+
 export const AppointmentService = {
   insertAppointments,
   getAllFromDb,
+  deleteAppointment,
 };

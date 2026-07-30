@@ -30,7 +30,21 @@ const getAllAppointments = catchAsync(async (req: Request & {user?: IJWTPayload}
     })
 })
 
+const deleteAppointments = catchAsync(async (req: Request, res: Response) => {
+    const id = req.params.id
+
+    const result = await AppointmentService.deleteAppointment(id)
+
+      sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Appointment deleted successfully!",
+        data: result
+    })
+})
+
 export const AppointmentsController = {
     insertAppointments,
-    getAllAppointments
+    getAllAppointments,
+    deleteAppointments
 }
