@@ -1,10 +1,10 @@
 model Appointment {
     id             String            @id @default(uuid())
-    patientId      String            @unique
-    doctorId       String            @unique
+    patientId      String            
+    doctorId       String            
     doctor         Doctor            @relation(fields: [doctorId], references: [id])
     patient        Patient           @relation(fields: [patientId], references: [id])
-    scheduleId     String            @unique
+    scheduleId     String            
     schedule       Schedule          @relation(fields: [scheduleId], references: [id])
     videoCallingId String
     status         AppointmentStatus
@@ -24,7 +24,7 @@ model Payment {
     amount             Float
     transactionId      String        @unique
     status             PaymentStatus @default(UNPAID)
-    paymentGateWayData Json
+    paymentGateWayData Json?
     createdAt          DateTime      @default(now())
     updatedAt          DateTime      @updatedAt
 

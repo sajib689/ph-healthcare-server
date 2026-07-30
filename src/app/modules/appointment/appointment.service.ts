@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { AppointmentStatus, PaymentStatus } from "@prisma/client";
+import { AppointmentStatus, PaymentStatus, Prisma } from "@prisma/client";
 import httpStatus from "http-status";
 import ApiError from "../../errors/ApiError";
 import { prisma } from "../../shared/prisma";
@@ -71,6 +71,17 @@ const insertAppointments = async (user: IJWTPayload, payload: any) => {
       },
     });
 
+    const transactionId = randomUUID();
+
+    await tx.payment.create({
+      data: {
+        appointmentId: appointment.id,
+        amount: doctorData.appointmentFee,
+        transactionId,
+        paymentGateWayData: Prisma.JsonNull,
+      },
+    });
+
     return appointment;
   });
 };
@@ -109,6 +120,7 @@ const getAllFromDb = async (user: IJWTPayload) => {
         patient: true,
         doctor: true,
         schedule: true,
+        payments: true
       },
     });
   }
@@ -164,6 +176,7 @@ const deleteAppointment = async (id: string) => {
       },
     });
   });
+
   return result;
 };
 
