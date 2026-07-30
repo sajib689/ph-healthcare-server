@@ -174,6 +174,7 @@ Return your response in JSON format with full individual doctor data.
 `;
 
   console.log("analyzing......\n");
+  
   const response = await gemini.models.generateContent({
     model: "gemini-3.6-flash",
     contents: prompt,
@@ -182,6 +183,7 @@ Return your response in JSON format with full individual doctor data.
       responseMimeType: "application/json",
     },
   });
+
   const content = response.text;
   console.log("gemini response content", content);
 
