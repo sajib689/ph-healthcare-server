@@ -125,7 +125,8 @@ const getAllFromDb = async (
   options: IOptions,
   filters: any,
 ) => {
-  const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options);
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelper.calculatePagination(options);
 
   const { searchTerm, ...filtersData } = filters;
 
@@ -188,15 +189,17 @@ const getAllFromDb = async (
     where: whereCondition,
     skip,
     take: limit,
-    include: {
-      patient: true,
-      doctor: true,
-      schedule: true,
-      payments: true,
-    },
+    include:
+      user.role === Role.PATIENT
+        ? {
+            doctor: true,
+          }
+        : {
+            patient: true,
+          },
     orderBy: {
-  [sortBy]: sortOrder,
-},
+      [sortBy]: sortOrder,
+    },
   });
 
   const total = await prisma.appointment.count({
@@ -211,7 +214,6 @@ const getAllFromDb = async (
     },
     data: result,
   };
-
 };
 
 const deleteAppointment = async (id: string) => {
