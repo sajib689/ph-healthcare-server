@@ -39,7 +39,7 @@ const prescriptionsLists = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getMyPrescriptionLists = catchAsync(async (req: Request & {user?: any}, res: Response) => {
-
+  const user = req.user
   const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
   const filters = pick(req.query, ["searchTerm", "name", "email", "address"]);
 

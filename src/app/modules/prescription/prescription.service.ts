@@ -10,7 +10,6 @@ import { prisma } from "../../shared/prisma";
 import httpStatus from "http-status";
 import ApiError from "../../errors/ApiError";
 import { IOptions, paginationHelper } from "../../helper/paginationHelper";
-import { meta } from "zod/v4/core";
 
 const createPrescription = async (
   user: IJWTPayload,
@@ -27,7 +26,9 @@ const createPrescription = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "Appointment ID is required.");
   }
 
-  const appointmentData = await prisma.appointment.findFirstOrThrow({
+  
+
+  const appointmentData = await prisma.appointment.findFirst({
     where: {
       id: payload.appointmentId,
       status: AppointmentStatus.COMPLETED,
@@ -38,7 +39,9 @@ const createPrescription = async (
     },
   });
 
-  if (appointmentData.doctor.email !== user.email) {
+  console.log(appointmentData);
+
+  if (appointmentData?.doctor.email !== user.email) {
     throw new ApiError(httpStatus.FORBIDDEN, "This is not your appointment.");
   }
 
@@ -55,8 +58,8 @@ const createPrescription = async (
       followUpDate: payload.followUpDate,
     },
     include: {
-      patient: true
-    }
+      patient: true,
+    },
   });
 
   return result;
@@ -138,12 +141,81 @@ const getAllPrescriptions = async (options: IOptions, filters: any) => {
   };
 };
 
-const getMyPrescriptions = async () => {
+const getMyPrescriptions = async (
+  user: IJWTPayload,
+  options: IOptions,
+  filters: any,
+) => {
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelper.calculatePagination(options);
+  const { searchTerm, ...filterData } = filters;
 
-}
+  const andConditions: Prisma.PrescriptionWhereInput[] = [];
+  if (searchTerm) {
+    andConditions.push({
+      OR: [
+        {
+          patient: {
+            name: {
+              contains: searchTerm,
+              mode: "insensitive",
+            },
+          },
+        },
+      ],
+    });
+  }
+
+  if (Object.keys(filterData).length > 0) {
+    const filters = Object.keys(filterData).map((key) => ({
+      [key]: {
+        equals: (filterData as any)[key],
+      },
+    }));
+    andConditions.push(...filters);
+  }
+
+  const whereConditions: Prisma.PrescriptionWhereInput =
+    andConditions.length > 0 ? { AND: andConditions } : {};
+
+  const result = await prisma.prescription.findMany({
+    where: {
+      appointment: {
+        patientId: user.id,
+      },
+      ...whereConditions,
+    },
+    include: {
+      appointment: {
+        include: {
+          patient: true,
+          doctor: true,
+        },
+      },
+    },
+    skip,
+    take: limit,
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
+  });
+
+  const total = await prisma.prescription.count({
+    where: whereConditions,
+  });
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
+};
 
 export const PrescriptionService = {
   createPrescription,
   getAllPrescriptions,
-  getMyPrescriptions
+  getMyPrescriptions,
 };
