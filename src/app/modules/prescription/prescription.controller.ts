@@ -38,8 +38,19 @@ const prescriptionsLists = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
-const getMyPrescriptionLists = catchAsync(async (req: Request, res: Response) => {
+const getMyPrescriptionLists = catchAsync(async (req: Request & {user?: any}, res: Response) => {
 
+  const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+  const filters = pick(req.query, ["searchTerm", "name", "email", "address"]);
+
+  const result = await PrescriptionService.getMyPrescriptions(user,options,filters)
+
+     sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Patient prescriptions retrieved successfully!",
+      data: result,
+    });
 })
 
 export const PrescriptionController = {
