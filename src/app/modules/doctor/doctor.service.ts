@@ -176,6 +176,7 @@ const deleteDoctor = async (id: string) => {
 };
 
 const getAiSuggestion = async (payload: { symptoms: string }) => {
+  
   if (!(payload && payload.symptoms)) {
     throw new ApiError(httpStatus.BAD_REQUEST, "symptoms is required!");
   }

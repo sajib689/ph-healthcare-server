@@ -74,7 +74,7 @@ const insertAppointments = async (user: IJWTPayload, payload: any) => {
 
     const transactionId = randomUUID();
 
-    await tx.payment.create({
+     await tx.payment.create({
       data: {
         appointmentId: appointment.id,
         amount: doctorData.appointmentFee,
@@ -94,22 +94,27 @@ const insertAppointments = async (user: IJWTPayload, payload: any) => {
             currency: "usd",
             unit_amount: Math.round(doctorData.appointmentFee * 100),
             product_data: {
-              name: `Appointment with Dr. ${doctorData.name}`,
+              name: `Appointment with ${doctorData.name}`,
             },
           },
-          quantity: 1
+          quantity: 1,
         },
       ],
+      metadata: {
+        appointmentId: appointment.id,
+        paymentId: patientData.id
+      },
 
       success_url: `${process.env.CLIENT_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
 
       cancel_url: `${process.env.CLIENT_URL}/payment/cancel`,
-
     });
 
-    // return session.url;
+    return {
+      checkoutUrl: session.url,
+    };
 
-    return appointment;
+    // return appointment;
   });
 };
 

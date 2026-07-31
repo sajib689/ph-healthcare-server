@@ -18,4 +18,5 @@ export default {
   GEMINI_API_KEY: process.env.GEMINI_API_KEY,
   CLIENT_URL: process.env.CLIENT_URL,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+  STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET
 };
