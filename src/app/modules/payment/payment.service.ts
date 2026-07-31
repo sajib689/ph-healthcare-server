@@ -19,7 +19,7 @@ const stripeWebhook = async (body: Buffer, signature: string) => {
       const appointmentId = session.metadata?.appointmentId;
       const paymentId = session.metadata?.paymentId;
 
-      console.log(appointmentId, paymentId);
+    //   console.log(appointmentId, paymentId);
       if (!appointmentId) break;
 
       await prisma.$transaction(async (tx) => {
