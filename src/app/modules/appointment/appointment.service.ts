@@ -249,8 +249,45 @@ const deleteAppointment = async (id: string) => {
   return result;
 };
 
+const updateAppointmentStatus = async (
+  id: string,
+  status: AppointmentStatus,
+  user: IJWTPayload,
+) => {
+  if (!id) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Not found");
+  }
+
+  const appointmentData = await prisma.appointment.findUniqueOrThrow({
+    where: {
+      id,
+    },
+    include: {
+      doctor: true,
+    },
+  });
+
+  if (user.role === Role.DOCTOR) {
+    if (!(user?.email === appointmentData.doctor.email)) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "This is not your appointment",
+      );
+    }
+    return await prisma.appointment.update({
+      where: {
+        id,
+      },
+      data: {
+        status,
+      },
+    });
+  }
+};
+
 export const AppointmentService = {
   insertAppointments,
   getAllFromDb,
   deleteAppointment,
+  updateAppointmentStatus,
 };
