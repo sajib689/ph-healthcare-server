@@ -1,10 +1,12 @@
 import { randomUUID } from "node:crypto";
-import { AppointmentStatus, PaymentStatus, Prisma } from "@prisma/client";
+import { AppointmentStatus, PaymentStatus, Prisma, Role } from "@prisma/client";
 import httpStatus from "http-status";
 import ApiError from "../../errors/ApiError";
 import { prisma } from "../../shared/prisma";
 import { IJWTPayload } from "../../types/common";
 import { stripe } from "../../helper/stripe";
+import { IOptions, paginationHelper } from "../../helper/paginationHelper";
+import { meta } from "zod/v4/core";
 
 const insertAppointments = async (user: IJWTPayload, payload: any) => {
   if (!user?.email) {
@@ -74,7 +76,7 @@ const insertAppointments = async (user: IJWTPayload, payload: any) => {
 
     const transactionId = randomUUID();
 
-     await tx.payment.create({
+    await tx.payment.create({
       data: {
         appointmentId: appointment.id,
         amount: doctorData.appointmentFee,
@@ -102,7 +104,7 @@ const insertAppointments = async (user: IJWTPayload, payload: any) => {
       ],
       metadata: {
         appointmentId: appointment.id,
-        paymentId: patientData.id
+        paymentId: patientData.id,
       },
 
       success_url: `${process.env.CLIENT_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -118,65 +120,98 @@ const insertAppointments = async (user: IJWTPayload, payload: any) => {
   });
 };
 
-const getAllFromDb = async (user: IJWTPayload) => {
+const getAllFromDb = async (
+  user: IJWTPayload,
+  options: IOptions,
+  filters: any,
+) => {
+  const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options);
+
+  const { searchTerm, ...filtersData } = filters;
+
   if (!user) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Unauthorized");
   }
 
-  // Admin
-  if (user.role === "ADMIN") {
-    return prisma.appointment.findMany({
-      include: {
-        patient: true,
-        doctor: true,
-        schedule: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-  }
+  const andConditions: Prisma.AppointmentWhereInput[] = [];
 
-  if (user.role === "PATIENT") {
-    const patient = await prisma.patient.findUniqueOrThrow({
-      where: {
+  if (user.role === Role.PATIENT) {
+    andConditions.push({
+      patient: {
         email: user.email,
       },
     });
-
-    return prisma.appointment.findMany({
-      where: {
-        patientId: patient.id,
-      },
-      include: {
-        patient: true,
-        doctor: true,
-        schedule: true,
-        payments: true,
-      },
-    });
-  }
-
-  if (user.role === "DOCTOR") {
-    const doctor = await prisma.doctor.findUniqueOrThrow({
-      where: {
+  } else if (user.role === Role.DOCTOR) {
+    andConditions.push({
+      doctor: {
         email: user.email,
       },
     });
+  }
 
-    return prisma.appointment.findMany({
-      where: {
-        doctorId: doctor.id,
-      },
-      include: {
-        patient: true,
-        doctor: true,
-        schedule: true,
-      },
+  if (searchTerm) {
+    andConditions.push({
+      OR: [
+        {
+          patient: {
+            name: {
+              contains: searchTerm,
+              mode: "insensitive",
+            },
+          },
+        },
+        {
+          doctor: {
+            name: {
+              contains: searchTerm,
+              mode: "insensitive",
+            },
+          },
+        },
+      ],
     });
   }
 
-  throw new ApiError(httpStatus.FORBIDDEN, "Invalid role");
+  if (Object.keys(filtersData).length > 0) {
+    const filterConditions = Object.keys(filtersData).map((key) => ({
+      [key]: {
+        equals: (filtersData as any)[key],
+      },
+    }));
+    andConditions.push(...filterConditions);
+  }
+
+  const whereCondition: Prisma.AppointmentWhereInput =
+    andConditions.length > 0 ? { AND: andConditions } : {};
+
+  const result = await prisma.appointment.findMany({
+    where: whereCondition,
+    skip,
+    take: limit,
+    include: {
+      patient: true,
+      doctor: true,
+      schedule: true,
+      payments: true,
+    },
+    orderBy: {
+  [sortBy]: sortOrder,
+},
+  });
+
+  const total = await prisma.appointment.count({
+    where: whereCondition,
+  });
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
+
 };
 
 const deleteAppointment = async (id: string) => {

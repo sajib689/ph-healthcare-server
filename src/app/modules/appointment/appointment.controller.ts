@@ -4,6 +4,7 @@ import { AppointmentService } from "./appointment.service";
 import sendResponse from "../../shared/sendResponse";
 import  httpStatus  from 'http-status';
 import { IJWTPayload } from "../../types/common";
+import pick from "../../helper/pick";
 
 const insertAppointments = catchAsync(async (req: Request & {user?: IJWTPayload}, res: Response) => {
     const user = req.user
@@ -18,9 +19,12 @@ const insertAppointments = catchAsync(async (req: Request & {user?: IJWTPayload}
 })
 
 const getAllAppointments = catchAsync(async (req: Request & {user?: IJWTPayload}, res: Response) => {
+    const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"])
+    const filters = pick(req.query, ["searchTerm", "name", "email", "address"])    
+
     const user = req.user
 
-    const result = await AppointmentService.getAllFromDb(user as IJWTPayload)
+    const result = await AppointmentService.getAllFromDb(user as IJWTPayload, options, filters)
 
       sendResponse(res, {
         success: true,
