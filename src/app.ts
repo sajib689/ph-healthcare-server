@@ -5,15 +5,19 @@ import notFound from "./app/middlewares/notFound";
 import router from "./app/routes";
 import cookieParser from "cookie-parser";
 import { PaymentController } from "./app/modules/payment/payment.controller";
-  
+import cron from "node-cron";
+import { AppointmentService } from "./app/modules/appointment/appointment.service";
+
 const app: Application = express();
 app.use(cookieParser());
 
-app.post("/webhook", express.raw({
-  type: "application/json"
-}),
-PaymentController.stripeWebhook
-)
+app.post(
+  "/webhook",
+  express.raw({
+    type: "application/json",
+  }),
+  PaymentController.stripeWebhook,
+);
 
 app.use(
   cors({
@@ -26,7 +30,16 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/api/v1", router)
+cron.schedule("* * * * *", async () => {
+  try {
+    await AppointmentService.cancelUnpaidAppointment();
+    console.log("Unpaid appointments canceled successfully");
+  } catch (error) {
+    console.error("Error occurred while canceling unpaid appointments:", error);
+  }
+});
+
+app.use("/api/v1", router);
 
 app.get("/", (req: Request, res: Response) => {
   res.send({

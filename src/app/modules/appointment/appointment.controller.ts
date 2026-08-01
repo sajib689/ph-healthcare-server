@@ -79,9 +79,11 @@ const updateAppointmentStatus = catchAsync(
   },
 );
 
+
+
 export const AppointmentsController = {
   insertAppointments,
   getAllAppointments,
   deleteAppointments,
-  updateAppointmentStatus
+  updateAppointmentStatus,
 };
