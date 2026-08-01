@@ -3,9 +3,13 @@ import { IJWTPayload } from "../../types/common";
 import { prisma } from "../../shared/prisma";
 
 const getMetaDate = async (user: IJWTPayload) => {
-  let metaData;
 
-  switch (user.role) {
+  console.log("User:", user);
+  console.log("Role:", user.role);
+  console.log("Role enum:", Role);
+
+  let metaData;
+  switch (user?.role) {
     case Role.ADMIN:
       metaData = "Admin Meta Data";
       metaData = await getAdminMetaData();
@@ -39,7 +43,8 @@ const getAdminMetaData = async () => {
     },
   });
   const totalPayments = await prisma.payment.count();
-
+  const barChartData = await getBarChartData();
+  const pieChart = await pieChartData();
   const metaData = {
     totalPatients: patientCount,
     totalDoctors: doctorCount,
@@ -48,6 +53,8 @@ const getAdminMetaData = async () => {
     totalPrescriptions: prescriptionCount,
     totalRevenue: totalRevenue._sum.amount,
     totalPayments: totalPayments,
+    barChartData,
+    pieChart,
   };
 
   return metaData;
@@ -110,7 +117,7 @@ const pieChartData = async () => {
 
   const dataFormate = appointmentsPerStatus.map(({ status, _count }) => ({
     status,
-    count: _count.id,
+    count: Number(_count.id),
   }));
 
   return dataFormate;
@@ -118,6 +125,5 @@ const pieChartData = async () => {
 
 export const MetaService = {
   getMetaDate,
-  getBarChartData,
-  pieChartData,
+ 
 };
