@@ -1,10 +1,10 @@
 model Appointment {
     id             String            @id @default(uuid())
-    patientId      String            
-    doctorId       String            
+    patientId      String
+    doctorId       String
     doctor         Doctor            @relation(fields: [doctorId], references: [id])
     patient        Patient           @relation(fields: [patientId], references: [id])
-    scheduleId     String            
+    scheduleId     String
     schedule       Schedule          @relation(fields: [scheduleId], references: [id])
     videoCallingId String
     status         AppointmentStatus
@@ -45,4 +45,19 @@ model Prescription {
     updatedAt     DateTime    @updatedAt
 
     @@map("prescriptions")
+}
+
+model Review {
+    id            String   @id @default(uuid())
+    appointmentId String
+    doctorId      String
+    doctor        Doctor   @relation(fields: [doctorId], references: [id])
+    patientId     String
+    patient       Patient  @relation(fields: [patientId], references: [id])
+    rating        Int
+    comment       String
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+
+    @@map("reviews")
 }
